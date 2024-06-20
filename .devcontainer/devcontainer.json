@@ -1,0 +1,41 @@
+{
+    "name": "dev-environment",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    // Override default workspace folder name in the container to enable mounting pipeline workspace when run in the CI/CD environment
+    "workspaceFolder": "/dev-environment",
+    "workspaceMount": "type=bind,source=${localWorkspaceFolder},target=/dev-environment",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.cpptools-extension-pack",
+                "eamodio.gitlens"
+            ],
+            "settings": {
+                "C_Cpp.clang_format_path": "/usr/bin/clang-format-18",
+                "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+                "editor.formatOnSave": true,
+                "editor.renderWhitespace": "all",
+                "files.trimFinalNewlines": true,
+                "gitlens.codeLens.enabled": false,
+                "terminal.integrated.scrollback": 10000,
+           }
+        }
+    },
+    "remoteUser": "vscode",
+    "runArgs": [
+        "--network=host"
+    ],
+    "mounts": [
+        // Make bash history persistent (by mapping the local history to the container's remote user's).
+        "type=bind,source=${localEnv:HOME}/.bash_history,target=/home/vscode/.bash_history",
+        // Make SSH keys available to the vscode user
+        "type=bind,source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh",
+        // Make local home folder available in the container under its original path (and not as the remote
+        // user's home folder).
+        // This can be useful for example to enable git worktrees in the container (as the paths to the
+        // worktree master are set as absolute paths).
+        "type=bind,source=${localEnv:HOME}/,target=${localEnv:HOME}/"
+    ]
+}
